@@ -15,11 +15,16 @@ import org.json.JSONStringer;
 
 import db.DatabaseModule;
 
+
+/* Deals with form input from listing.jsp, stores necessary data in DB, redirects user to 
+ * final confirmation page.
+ */
 @SuppressWarnings("serial")
 public class FinalizeServlet extends HttpServlet {
 
 	private static final Logger log = Logger.getLogger(FinalizeServlet.class.getName());
 
+	// Only accepts post requests =)
 	public void doPost(HttpServletRequest req, HttpServletResponse resp)
 			throws IOException, ServletException {
 		// If no key string, user has illegally navigated here; tell him/her to get lost
@@ -31,8 +36,7 @@ public class FinalizeServlet extends HttpServlet {
 		}
 		// Otherwise...
 		else {
-			// Retrieve the new title for the entry, reuse old key for simplicity's sake
-			// Also retrieve all other parameters of the entity for future use
+			// Retrieve all other parameters of the entity for future use
 			String categoryIndex = req.getParameter("whatCategoryIndex");
 			String title = req.getParameter("title");
 			if (title == null) title = "";
@@ -64,6 +68,7 @@ public class FinalizeServlet extends HttpServlet {
 			if (returns == null) returns = "";
 			// Populate the new entry with all fields (title, body, price, condition, etc
 			try {
+				// Deal with captcha errors
 				boolean binadjusted = false;
 				String captchaOfficial = (String) req.getParameter("captchaText");
 				log.info("User captcha: " + captcha);
@@ -74,9 +79,11 @@ public class FinalizeServlet extends HttpServlet {
 					dispatch.forward(req, resp);
 					return;
 				}
+				// Deal with title and body
 				title = StringEscapeUtils.escapeHtml4(title);
 				body = StringEscapeUtils.escapeHtml4(body);
 				price = price.replaceAll("\\$", "");
+				// Deal with price
 				double listPrice = 0;
 				if (!price.equals("")) {
 					listPrice = Double.parseDouble(price);
@@ -107,6 +114,7 @@ public class FinalizeServlet extends HttpServlet {
 					price = "";
 					buyItNow = "";
 				}
+				// Deal with IP, specifics
 				String IP = req.getRemoteAddr();
 				String specifics = "[]";
 				log.info("Category index: " + categoryIndex);
@@ -130,17 +138,16 @@ public class FinalizeServlet extends HttpServlet {
 					specifics = stringer.toString();
 					log.info("Specifics JSON text: " + specifics);
 				}
-				// Put the new entry in the datastore, replacing the old one
+				// Update listing in DB
 				DatabaseModule.updateListing(Long.parseLong(keyString), title, body, price, buyItNow, condition, time, category, shippingChoice, attribute, location, handlingTime, returns, specifics, IP);
 				// Create the response page, job's done
 				String nextURL;
 				if (!binadjusted) nextURL = "finalized.jsp?key=" + new String(keyString);
 				else nextURL = "finalized.jsp?key=" + new String(keyString) + "&adj=true";
 				resp.sendRedirect(nextURL);
-				//RequestDispatcher dispatch = req.getRequestDispatcher(nextURL);
-				//dispatch.forward(req, resp);
 				return;
 			}
+			// On error, crap out
 			catch (Exception ex) {
 				log.severe(ex.toString());
 				StackTraceElement[] st = ex.getStackTrace();

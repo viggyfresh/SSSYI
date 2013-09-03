@@ -252,7 +252,7 @@ if (keyString == null || keyString.equals("")) {
 			<div class="col-md-9">
 				<p class="form-control-static lead">
 					<%
-						if (returns.equals("yes")) out.println("Returns Accepted");
+						if (returns.equals("yes")) out.println("Returns Accepted (30 days)");
 						else out.println("No Returns Accepted");
 					%>
 				</p>				

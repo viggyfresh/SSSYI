@@ -14,6 +14,9 @@ import java.util.logging.Logger;
 
 //TAKEN FROM: http://stackoverflow.com/questions/4308554/simplest-way-to-read-json-from-a-url-in-java
 
+/*
+ * Essentially takes in a URL and scrapes a JSON from it. Used to parse response from getAttributes call
+ */
 public class JsonReader {
 
 	private static final Logger log = Logger.getLogger(JsonReader.class.getName());
@@ -26,7 +29,8 @@ public class JsonReader {
 		}
 		return sb.toString();
 	}
-
+	
+	// URL in, JSON object out
 	public static JSONObject readJsonFromUrl(String url) throws IOException, JSONException {
 		InputStream is = new URL(url).openStream();
 		try {

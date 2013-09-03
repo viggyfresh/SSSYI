@@ -12,6 +12,9 @@ import java.util.logging.Logger;
 import ebay.EbayServiceModule;
 import listing.Listing;
 
+/*
+ * Sets up and makes all MySQL DB queries
+ */
 
 public class DatabaseModule {
 	private static final String SQL_URL = "jdbc:mysql://emailtolisting-16253.phx-os1.stratus.dev.ebay.com:5555/etl_db";
@@ -26,6 +29,7 @@ public class DatabaseModule {
 
 	private static final Logger log = Logger.getLogger(DatabaseModule.class.getName());
 
+	// Here be test functions
 	public static void main(String[] args) {
 		init();
 		EbayServiceModule.init();
@@ -38,8 +42,8 @@ public class DatabaseModule {
 			e.printStackTrace();
 		}
 	}
-	
-	
+
+	// Initializes the driver
 	public static void init() {
 		//String driverName = "oracle.jdbc.driver.OracleDriver"; // for Oracle
 		String driverName = "com.mysql.jdbc.Driver"; //for MySql
@@ -70,10 +74,12 @@ public class DatabaseModule {
 		initialized = true;
 	}
 
+	// Closes the connection, if its been started
 	public static void shutdown() throws SQLException {
 		if (initialized) conn.close();
 	}
 
+	// Takes a listing and throws it into the DB
 	public static void storeListing(long count, Listing entry) throws SQLException {
 		PreparedStatement stmt = conn.prepareStatement("INSERT INTO " + TABLE + " (id, title, fullTitle, body, price, email, finalized, category, category0, category1, category2, shippingChoice, shippingOption0, shippingOption1, shippingOption2, shippingOption3, shippingOption4, shippingOption5, attribute, attribute0, attribute1, attribute2, url0, url1, url2, url3, url4, url5, url6, url7, url8, url9, url10, url11, item_time, item_condition, buyItNow, captcha, captchaImage, location, handling_time, returns, req_specifics0, req_specifics1, req_specifics2, specifics, ip) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
 		stmt.setLong(1, count);
@@ -141,7 +147,7 @@ public class DatabaseModule {
 
 	}
 
-
+	// Retrieves a listing from the DB
 	public static Listing retrieveListing(long id) throws SQLException {
 		Statement stmt = conn.createStatement();
 		String query = "SELECT * from " + TABLE + " WHERE id=" + id;
@@ -208,10 +214,11 @@ public class DatabaseModule {
 		return entry;
 	}
 
+	// Updates a listing in the DB
 	public static void updateListing(long count, String title, String body,
 			String price, String buyItNow, String condition, String time,
 			String category, String shippingChoice, String attribute, String location, String handlingTime, String returns, String specifics, String IP ) throws SQLException {
-		PreparedStatement stmt = conn.prepareStatement("UPDATE " + TABLE + " SET title = ?, body = ?, price = ?, buyItNow = ?, item_condition = ?, item_time = ?, category = ?, shippingChoice = ?, attribute = ?, finalized = ?, location = ?, handling_time = ?, returns = ?, specifics = ?, ip = ? WHERE id=" + count);
+		PreparedStatement stmt = conn.prepareStatement("UPDATE " + TABLE + " SET title = ?, body = ?, price = ?, buyItNow = ?, item_condition = ?, item_time = ?, category = ?, shippingChoice = ?, attribute = ?, location = ?, handling_time = ?, returns = ?, specifics = ?, ip = ? WHERE id=" + count);
 		stmt.setString(1, title);
 		stmt.setString(2, body);
 		stmt.setString(3, price);
@@ -221,15 +228,14 @@ public class DatabaseModule {
 		stmt.setString(7, category);
 		stmt.setString(8, shippingChoice);
 		stmt.setString(9, attribute);
-		stmt.setString(10, "true");
-		stmt.setString(11, location);
-		stmt.setString(12, handlingTime);
-		stmt.setString(13, returns);
-		stmt.setString(14, specifics);
-		stmt.setString(15, IP);
+		stmt.setString(10, location);
+		stmt.setString(11, handlingTime);
+		stmt.setString(12, returns);
+		stmt.setString(13, specifics);
+		stmt.setString(14, IP);
 		log.info("Update statement: " + stmt.toString());
 		try {
-		stmt.executeUpdate();
+			stmt.executeUpdate();
 		}
 		catch (SQLException ex) {
 			log.severe(ex.toString());
@@ -243,7 +249,29 @@ public class DatabaseModule {
 			updateListing(count, title, body, price, buyItNow, condition, time, category, shippingChoice, attribute, location, handlingTime, returns, specifics, IP);
 		}
 	}
+	
+	// Updates the finalized field in the DB. Finalized will be false OR contain the listing ID of an item that has been listed to eBay
+	public static void updateFinalized(long count, String finalized) throws SQLException {
+		PreparedStatement stmt = conn.prepareStatement("UPDATE " + TABLE + " SET finalized = ? WHERE id=" + count);
+		stmt.setString(1, finalized);
+		log.info("Update finalized statement: " + stmt.toString());
+		try {
+			stmt.executeUpdate();
+		}
+		catch (SQLException ex) {
+			log.severe(ex.toString());
+			StackTraceElement[] st = ex.getStackTrace();
+			for (int i = 0; i < st.length; i++) {
+				log.severe(st[i].toString());
+			}
+			ex.printStackTrace();
+			shutdown();
+			init();
+			updateFinalized(count, finalized);
+		}
+	}
 
+	// Gets the count of the DB, which becomes the new item's ID. Only synchronized method in whole app
 	synchronized public static long getCount() throws SQLException {
 		Statement stmt = conn.createStatement();
 		ResultSet rs = null;

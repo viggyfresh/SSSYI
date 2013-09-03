@@ -471,7 +471,7 @@ if (keyString == null || keyString.equals("")) {
 			<label for="returns" class="col-md-3 control-label lead"><strong>Return Policy</strong></label>
 			<div class="col-md-9">
 				<select name="returns" class="form-control input-lg">
-  					<option value="yes" <% if (returns.equals("yes")) out.println("selected"); %>>Returns Accepted</option>
+  					<option value="yes" <% if (returns.equals("yes")) out.println("selected"); %>>Returns Accepted (30 days)</option>
   					<option value="no" <% if (returns.equals("no")) out.println("selected"); %>>No Returns Accepted</option>		
   				</select>
 			</div>

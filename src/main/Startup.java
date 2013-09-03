@@ -9,6 +9,11 @@ import ebay.EbayServiceModule;
 import email.EmailReceiver;
 import email.EmailSender;
 
+/*
+ * Startup class. Initializes everything that needs to be, shuts down
+ * stuff when needed.
+ */
+
 public class Startup {
 
 private static final String email = "emailtolisting@gmail.com";
@@ -26,6 +31,7 @@ private static final Logger log = Logger.getLogger(Startup.class.getName());
 		log.info("Starting up background programs...");
 		Runnable r = new Runnable() {
 			public void run() {
+				// Init database, ebayservice, and email modules
 				DatabaseModule.init();
 				EbayServiceModule.init();
 				EmailSender.init(email);
@@ -36,9 +42,11 @@ private static final Logger log = Logger.getLogger(Startup.class.getName());
 			}
 		};
 		new Thread(r).start();
+		log.info("Background programs started...");
 	}
 
 	public static void shutdown() throws SQLException, MessagingException {
+		// Kill service modules
 		log.info("Shutting down database connection and email receiver...");
 		DatabaseModule.shutdown();
 		receiver.shutdown();	

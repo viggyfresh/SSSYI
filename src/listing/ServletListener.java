@@ -8,6 +8,8 @@ import javax.servlet.ServletContextListener;
 import main.Startup;
 import db.DatabaseModule;
 
+// Handles initialization of project on startup of server =)
+// Also handles shutdown of project on closing of server
 public class ServletListener implements ServletContextListener {
 
 	private static final Logger log = Logger.getLogger(ServletListener.class.getName());

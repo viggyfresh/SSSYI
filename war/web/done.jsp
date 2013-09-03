@@ -48,10 +48,12 @@ pageEncoding="ISO-8859-1"%>
         <h1>Listing Submitted to eBay</h1>
 		<%
 		String id = request.getParameter("id");
+		String key = request.getParameter("key");
 		out.println("<p>Your listing has been submitted to eBay!</p>");
-		out.println("<p>To view it, please go <a href=\"http://www.ebay.com/itm/" + id + "\">here.</a></p>");
-		//out.println("<p style=\"font-size: 40px; line-height: 150%\">To make further changes to your listing, please go <a href=\"listing.jsp?key=" + keyString + "\">here.</a></p>");
-		out.println("<button class=\"btn btn-danger btn-lg\" href=\"http://www.ebay.com\">Go to eBay Homepage</button>");
+		out.println("<p>To view or modify it, please follow the links below!</p>");
+		out.println("<a class=\"btn btn-primary btn-lg\" href=\"http://www.ebay.com/itm/" + id + "\">View Item</a>");
+		out.println("<a class=\"btn btn-info btn-lg\" href=\"listing.jsp?key=" + key + "\">Revise Item</a>");
+	
 		%>
 	   </div>
     </div> <!-- /container -->

@@ -2,6 +2,10 @@ package listing;
 
 import java.util.ArrayList;
 
+/*
+ * Class declaration for Listing object. Basically just a buncha strings =)
+ */
+
 public class Listing {
 	private String title;
 	private String fullTitle;

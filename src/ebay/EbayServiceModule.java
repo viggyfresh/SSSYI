@@ -21,6 +21,7 @@ import com.ebay.sdk.call.GetCategoryFeaturesCall;
 import com.ebay.sdk.call.GetCategorySpecificsCall;
 import com.ebay.sdk.call.GetProductSearchResultsCall;
 import com.ebay.sdk.call.GetSuggestedCategoriesCall;
+import com.ebay.sdk.call.ReviseItemCall;
 import com.ebay.sdk.call.VerifyAddItemCall;
 import com.ebay.sdk.util.eBayUtil;
 import com.ebay.soap.eBLBaseComponents.AmountType;
@@ -56,6 +57,11 @@ import com.ebay.soap.eBLBaseComponents.ShippingServiceCodeType;
 import com.ebay.soap.eBLBaseComponents.SuggestedCategoryType;
 import com.ebay.soap.eBLBaseComponents.ValueRecommendationType;
 
+/* Handles any eBay service calls that the app needs to make.
+ * For example, getting suggested categories or listing an item.
+ */
+
+
 public class EbayServiceModule {
 	private static ApiContext apiContext;
 	private static final Logger log = Logger.getLogger(EbayServiceModule.class.getName());
@@ -76,19 +82,8 @@ public class EbayServiceModule {
 		}
 	}
 
-	public static void getEPID(String query, String category) throws ApiException, SdkException, Exception {
-		GetProductSearchResultsCall apiCall = new GetProductSearchResultsCall(apiContext);
-		ProductSearchType pst = new ProductSearchType();
-		pst.setQueryKeywords(query);
-		CharacteristicSetIDsType csit = new CharacteristicSetIDsType();
-		String[] cat = new String[1];
-		cat[0] = category;
-		csit.setID(cat);
-		pst.setCharacteristicSetIDs(csit);
-		ProductSearchResultType[] res = apiCall.getProductSearchResults();
-		System.out.println(res.length);
-	}
-
+	// Gets the category specifics of each category in the array of categories that are passed in as input.
+	// Returns a JSON object of form { "specific": "blah", "type": "blah", "options": [{"option0": "blah"}] }
 	public static ArrayList<String> getCategorySpecifics(String[] categories) throws ApiException, SdkException, Exception {
 		ArrayList<String> toReturn = new ArrayList<String>();
 		GetCategorySpecificsCall apiCall = new GetCategorySpecificsCall(apiContext);
@@ -134,6 +129,7 @@ public class EbayServiceModule {
 	}
 
 
+	// Returns suggested categories for a given query (typically a listing title)
 	public static SuggestedCategoryType[] getSuggestedCategories(String query) throws IOException {
 		try {
 			//Create call object and execute the call
@@ -153,7 +149,7 @@ public class EbayServiceModule {
 		}
 	} // main
 
-	// Initializes ApiContext with token and eBay API server URL
+	// Initializes ApiContext with token and eBay API server URL. STICK TO PROD; SANDBOX WILL BREAK STUFF
 	private static ApiContext getApiContext() throws IOException {
 		ApiAccount account = new ApiAccount();
 		//account.setApplication("eBaye8105-709a-4eb1-9bb5-b24ffe88f46"); // SANDBOX
@@ -190,6 +186,7 @@ public class EbayServiceModule {
 		//context.setEpsServerUrl("https://api.sandbox.ebay.com/ws/api.dll"); // SANDBOX
 		context.setEpsServerUrl("https://api.ebay.com/ws/api.dll"); // PROD
 		
+		// Set up retry for 3\
 		CallRetry cr = new CallRetry();
 		cr.setMaximumRetries(3);                      // Max 3 retries
 		cr.setDelayTime(1000);          // Retry delay 1000 ms
@@ -198,6 +195,59 @@ public class EbayServiceModule {
 		return context;
 	} 
 
+	// Revise item call, for when you're modifying an item
+	public static String[] reviseItem(Listing l, long count, String EPID) throws ApiException, SdkException, Exception {
+		String reviseItemID = l.getFinalized();
+		ItemType item = buildItem(l, count, EPID);
+		item.setItemID(reviseItemID);
+		ReviseItemCall api = new ReviseItemCall(apiContext);
+		api.setItemToBeRevised(item);
+		FeesType fees = null;
+		if (EPID != null) {
+			try {
+				fees = api.reviseItem();
+			}
+			catch (Exception ex) {
+				log.severe(api.getResponseXml());
+				ex.printStackTrace();
+				String[] badResult = new String[2];
+				badResult[0] = "Error";
+				badResult[1] = "Error";
+				return badResult;
+			}
+		}
+		else {
+			try {
+				fees = api.reviseItem();
+			}
+			catch (Exception e) {
+				log.info(api.getResponseXml());
+				e.printStackTrace();
+				EPID = "";
+				if (e.getMessage().contains("EPID")) {
+					int index = e.getMessage().indexOf("EPID");
+					int EPIDindex = index + 5;
+					while (e.getMessage().charAt(EPIDindex) != ' ') {
+						EPIDindex++;
+					}
+					EPID = new String(e.getMessage().substring(index + 5, EPIDindex));
+					return reviseItem(l, 23, "EPID"+EPID);
+				}
+			}
+		}
+		double listingFee = eBayUtil.findFeeByName(fees.getFee(), "ListingFee").getFee().getValue();
+		String[] returnVal = new String[2];
+		returnVal[0] = new Double(listingFee).toString();
+		returnVal[1] = item.getItemID();
+		return returnVal;
+	}
+	
+	
+	
+	
+	
+	
+	// Given a listing, proceeds to actually list it on eBay under the account specified in the context
 	public static String[] actuallyListItem(Listing l, long count, String EPID) throws ApiException, SdkException, Exception {
 		ItemType item = buildItem(l, count, EPID);
 		AddItemCall api = new AddItemCall(apiContext);
@@ -260,6 +310,7 @@ public class EbayServiceModule {
 		return returnVal;
 	}
 
+	// Utility function to return the category number from a string of form blah > blah > blah > blah (CATEGORY#)
 	public static String getCategoryIDFromCategory(String category) {
 		int counter = category.length() - 1;
 		while (category.charAt(counter) != '(') {
@@ -269,6 +320,7 @@ public class EbayServiceModule {
 		return categoryID;
 	}
 
+	// Builds the item that will be used in the addItem/reviseItem call
 	private static ItemType buildItem(Listing l, long count, String EPID) {
 		ItemType item = new ItemType();
 		// item title
@@ -282,8 +334,6 @@ public class EbayServiceModule {
 			pldt.setProductReferenceID(EPID);
 			item.setProductListingDetails(pldt);
 		}
-		// listing type
-		//item.setListingType(ListingTypeCodeType.AUCTION);
 		// listing price
 		item.setCurrency(CurrencyCodeType.USD);
 		AmountType amount = new AmountType();
@@ -344,7 +394,7 @@ public class EbayServiceModule {
 		else if (l.getCondition().equals("Seller refurbished")) item.setConditionID(2500);
 		else if (l.getCondition().equals("For parts or not working")) item.setConditionID(7000);
 
-		// payment
+		// payment - currently faking it =D
 		BuyerPaymentMethodCodeType[] arrPaymentMethods = new BuyerPaymentMethodCodeType[]{BuyerPaymentMethodCodeType.PAY_PAL};
 		item.setPayPalEmailAddress("test@pp.com");
 		item.setPaymentMethods(arrPaymentMethods);
@@ -360,7 +410,7 @@ public class EbayServiceModule {
 		return item;
 	}
 
-
+	// Sets up return policy
 	private static ReturnPolicyType getReturnPolicy(Listing l) {
 		if (l.getReturns().equalsIgnoreCase("yes")) {
 			ReturnPolicyType rp = new ReturnPolicyType();
@@ -377,7 +427,7 @@ public class EbayServiceModule {
 		}
 	}
 
-
+	// Sets up shipping options
 	private static ShippingDetailsType getShippingDetails(Listing l) {
 		ShippingDetailsType sd = new ShippingDetailsType();
 		String shippingChoice = l.getShippingChoice();
@@ -451,12 +501,14 @@ public class EbayServiceModule {
 		return sd;
 	}
 
+	// Utility function to declare an AmountType with a specific amount
 	private static AmountType getAmount(double amount) {
 		AmountType a = new AmountType();
 		a.setValue(amount);
 		return a;
 	}
-
+	
+	// Test functions here =)
 	public static void main(String[] args) throws ApiException, SdkException, Exception {
 		init();
 		//		SuggestedCategoryType[] categories = getSuggestedCategories("iphone 5 64gb");

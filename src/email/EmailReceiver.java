@@ -19,6 +19,10 @@ import listing.EmailToListing;
 
 import com.sun.mail.imap.IMAPFolder;
 
+/*
+ * Receives emails, grabs new messages, and makes listing objects out of them.
+ * Currently configured to gmail; uncomment stuff to make it work for CORP
+ */
 
 public class EmailReceiver {
 

@@ -11,7 +11,10 @@ import javax.mail.Transport;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 
-
+/*
+ * Sends email from your account of choice. Right now configured to gmail; commented out sections
+ * work on ebay corp server
+ */
 public class EmailSender {
 
 	private static String email;

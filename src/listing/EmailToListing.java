@@ -47,6 +47,10 @@ import db.DatabaseModule;
 import ebay.EbayServiceModule;
 import email.EmailSender;
 
+/*
+ * Takes in email, turns it into a listing object
+ */
+
 public class EmailToListing {
 
 	private static final Logger log = Logger.getLogger(EmailToListing.class.getName());
@@ -63,15 +67,18 @@ public class EmailToListing {
 	private static final String IMAGE_URL = "files/images/";
 
 	public static void toListing(Message message) throws IOException {
-		// Retrieve the message encoded in MIME format into the post request
+		// Initialize needed vars
 		Message msg = message;
 		List<BodyPart> images = new ArrayList<BodyPart>();
 		ArrayList<String> types = new ArrayList<String>();
-		// Retrieve the count variable from the datastore
 		try {
+			// Get count (unique identifier) from database
 			long count = DatabaseModule.getCount();
+			// Init new listing
 			Listing entry = new Listing();
+			// Parse message for images, types, title, and body
 			String[] titleAndBody = parseMessage(msg, images, types);
+			// Set all fields for listing
 			setTextFields(titleAndBody, entry);
 			setAndStoreImages(images, types, entry, count);
 			setPrice(entry);
@@ -81,7 +88,9 @@ public class EmailToListing {
 			setRequiredSpecifics(entry);
 			
 			//System.out.println(sql);
+			// Store listing to DB
 			DatabaseModule.storeListing(count, entry);
+			// Send reply
 			formatReplyMessage(count, msg, entry.getFullTitle());
 		}
 		catch (Exception ex) {
@@ -94,6 +103,7 @@ public class EmailToListing {
 		}
 	}
 
+	// Sets the required specifics for an entry using getCategorySpecifics based on the given categories
 	private static void setRequiredSpecifics(Listing entry) throws ApiException, SdkException, Exception {
 		int count = 0;
 		for (int i = 0; i < 3; i++) {
@@ -103,6 +113,7 @@ public class EmailToListing {
 		for (int i = 0; i < count; i++) {
 			iKilledTheEmpties[i] = EbayServiceModule.getCategoryIDFromCategory(entry.getCategories().get(i));
 		}
+		// JSON return format documented in EbayServiceModule
 		ArrayList<String> requiredSpecificsArray = EbayServiceModule.getCategorySpecifics(iKilledTheEmpties);
 		if (requiredSpecificsArray.size() > 0) {
 			entry.setReqSpecifics0(requiredSpecificsArray.get(0));
@@ -115,6 +126,7 @@ public class EmailToListing {
 		}
 	}
 
+	// Sets listing title, body, and fulltitle
 	private static void setTextFields(String[] titleAndBody, Listing entry) {
 		String fullTitle = titleAndBody[0];
 		entry.setFullTitle(fullTitle);
@@ -140,8 +152,8 @@ public class EmailToListing {
 
 	}
 
+	// Write the images to the disk, save URLs to the entry
 	private static void setAndStoreImages(List<BodyPart> images, ArrayList<String> types, Listing entry, long count) throws IOException, InterruptedException, MessagingException {
-		// Write the images to the server, get the image entry.getUrls(), and embed them in the entry object
 		ArrayList<String> imageURLs = new ArrayList<String>();
 		for (int i = 0; i < 12; i++) {
 			if (i < images.size()) {
@@ -160,6 +172,7 @@ public class EmailToListing {
 		log.info("Images found: " + images.size());
 	}
 
+	// Sets price of entry
 	private static void setPrice(Listing entry) {
 		// Retrieve the price (if gettable), store it too
 		String price = "";
@@ -188,6 +201,7 @@ public class EmailToListing {
 		log.info("Price: " + price);
 	}
 
+	// Sets categories for the listing using getSuggestedCategories call
 	private static void setCategories(Listing entry) throws IOException {
 		ArrayList<String> categories = new ArrayList<String>();
 		ArrayList<String> categoryIDs = new ArrayList<String>();
@@ -216,6 +230,7 @@ public class EmailToListing {
 		setAttributes(entry, categoryIDs);
 	}
 
+	// Sets shipping options, currently uses poseidon (ugh)
 	private static void setShippingOptions(Listing entry, ArrayList<String> categoryIDs) {
 		ArrayList<Document> shippingPages = new ArrayList<Document>();
 		ArrayList<String> shippingOptions = new ArrayList<String>();
@@ -350,6 +365,7 @@ public class EmailToListing {
 
 	}
 
+	// Sets the attributes using the ebay service URL
 	private static void setAttributes (Listing entry, ArrayList<String> categoryIDs) throws UnsupportedEncodingException {
 		ArrayList<String> attributes = new ArrayList<String>();
 		// Parse for entry.getAttributes() based on the categories retrieved
@@ -381,6 +397,7 @@ public class EmailToListing {
 
 	}
 
+	// Constructs and sets a captcha to the entry
 	private static void setCaptcha(Listing entry, long count) throws IOException, MessagingException {
 		FontUtils font = new FontUtils();
 		String[] split;
@@ -416,6 +433,7 @@ public class EmailToListing {
 		setDefaultStates(entry, split);
 	}
 
+	// Sets default states (condition, shipping, auction length, buy it now)
 	private static void setDefaultStates(Listing entry, String[] split) throws MessagingException {
 		// Search for new keyword in the entry's title and body
 		for (int i = 0; i < split.length; i++) {
@@ -521,6 +539,7 @@ public class EmailToListing {
 	}
 
 
+	// Parses message for title, body, and images
 	private static String[] parseMessage(Message msg, List<BodyPart> images, ArrayList<String> types) throws InterruptedException {
 
 		String[] titleAndBody = new String[2];
@@ -587,6 +606,7 @@ public class EmailToListing {
 		}
 	}
 
+	// Sends reply message
 	private static void formatReplyMessage(long key, Message msg, String title) throws UnsupportedEncodingException {
 		// Put together the templated message response (with key identifier)
 		String replyBody = "Thank you for emailing me, the world's greatest email-to-listing test server!\n";
