@@ -38,11 +38,19 @@ public class ListItemServlet extends HttpServlet {
 				// Otherwise list it fresh
 				results = EbayServiceModule.actuallyListItem(l, id, null);
 			}
-			// Take user to final page of flow
-			DatabaseModule.updateFinalized(id, results[1]);
-			String nextURL = "done.jsp?id=" + results[1] + "&key=" + keyString;
-			response.sendRedirect(nextURL);
-			return;
+			if (results[0].equals("Error")) {
+				String text = results[1];
+				String nextURL = "error.jsp?key=" + keyString + "&text=" + text;
+				response.sendRedirect(nextURL);
+				return;
+			}
+			else {
+				// Take user to final page of flow
+				DatabaseModule.updateFinalized(id, results[1]);
+				String nextURL = "done.jsp?id=" + results[1] + "&key=" + keyString;
+				response.sendRedirect(nextURL);
+				return;
+			}
 		}
 		catch (Exception ex) {
 			log.severe(ex.toString());
@@ -53,7 +61,7 @@ public class ListItemServlet extends HttpServlet {
 			ex.printStackTrace();
 		}
 	}
-	
+
 	// Helper function to check if a string is numeric
 	private boolean isLongParseable(String finalized) {
 		try {  

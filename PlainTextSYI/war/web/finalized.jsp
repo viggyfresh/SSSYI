@@ -42,10 +42,14 @@ pageEncoding="ISO-8859-1"%>
 
     <div class="container theme-showcase">
 
+      <div class="progress">
+        <div class="progress-bar progress-bar-info" role="progressbar" aria-valuenow="66" aria-valuemin="0" aria-valuemax="100" style="width: 66%"><span>Finalize: Step 2 of 3</span></div>
+      </div>
+
       <!-- Main jumbotron for a primary marketing message or call to action -->
       <div class="jumbotron">
 		<img src='http://www.plentymarkets.eu/images/produkte/i17/1735-ebay-tm-rgb.png' width="250" height="100"/>
-        <h1>Listing Finalized</h1>
+        <h2>Almost there!</h2>
 <%
 String keyString = request.getParameter("key");
 if (keyString == null || keyString.equals("")) {
@@ -57,8 +61,7 @@ if (keyString == null || keyString.equals("")) {
 	// Retrieves ALL information related to the current entry being viewed
 	Listing listing = DatabaseModule.retrieveListing(Long.parseLong(keyString));
 	out.println("<p>Your changes have been saved! They are shown below.</p>");
-	out.println("<p>To make further changes to your listing, please go <a href=\"listing.jsp?key=" + keyString + "\">here.</a></p>");
-	out.println("<p>To submit your listing to eBay, click the submit button. It will be listed under the account 'jamzadeh-seller' for now.</p>");
+	out.println("<p>To submit your listing to eBay, click the submit button. It will be listed under the account 'jamzadeh-seller.'</p>");
 	if (adj.equals("true")) out.println("<p class=\"text-danger\">Your buy it now price wasn't 30% greater than the starting price! Please go back and fix this if you wish.</p></div>");
 	else out.println("</div>");
 	String title = (String) listing.getTitle();
@@ -163,7 +166,7 @@ if (keyString == null || keyString.equals("")) {
 			</div>
 		</div>
 		<div class="form-group">
-			<label for="price" class="col-md-3 control-label lead"><strong>Starting Price ($)</strong></label>
+			<label for="price" class="col-md-3 control-label lead"><strong>Auction Start Price ($)</strong></label>
 			<div class="col-md-9">
 				<p class="form-control-static lead"><%=price%></p>
 			</div>
@@ -200,7 +203,7 @@ if (keyString == null || keyString.equals("")) {
 		</div>
 		<% if (specificsArray != null) { %>		
 		<div class="form-group">
-			<label for="specifics" class="col-md-3 control-label lead"><strong>Required Specifics</strong></label>
+			<label for="specifics" class="col-md-3 control-label lead"><strong><u>REQUIRED</u> Specifics</strong></label>
 			<div class="col-md-9">
 				<p class="form-control-static lead">
 					<% 
@@ -265,6 +268,7 @@ if (keyString == null || keyString.equals("")) {
 		<div class="form-group">
 			<div class="col-md-offset-3 col-md-9">
 				<button type="submit" id="submit_to_ebay" class="btn btn-success btn-lg" data-loading-text="Submitting...">Submit to eBay</button>
+				<a class="btn btn-lg btn-danger" href="listing.jsp?key=<%= keyString %>">Revise</a>
 			</div>
 		</div>
 	</form>
@@ -279,7 +283,7 @@ if (keyString == null || keyString.equals("")) {
     <script src="../dist/js/bootstrap.min.js"></script>
     <script src="../assets/js/holder.js"></script>
 	<script type="text/javascript" src="../assets/fancybox/jquery.fancybox.js?v=2.1.5"></script>
-	<script type="text/JavaScript"> 
+	<script type="text/javaScript"> 
 		$(document).on("click", "#submit_to_ebay", function() {
 			var btn = $(this);
 			btn.button('loading');
@@ -294,6 +298,9 @@ if (keyString == null || keyString.equals("")) {
 
 			$('.fancybox').fancybox({
 				type: 'image'
+			});
+			$('.carousel').carousel({
+				  interval: 2000
 			});
 		});
 	</script>

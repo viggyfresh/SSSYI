@@ -40,12 +40,22 @@ pageEncoding="ISO-8859-1"%>
 
   <body>
 
+
+
     <div class="container theme-showcase">
+    
+      <div class="progress">
+        <div class="progress-bar progress-bar-info" role="progressbar" aria-valuenow="33" aria-valuemin="0" aria-valuemax="100" style="width: 33%;"><span>Proofread: Step 1 of 3</span></div>
+      </div>
+      
+        <div class="alert alert-danger" id="alertDiv" style="position: absolute; margin-left: auto; margin-right: auto; margin-top: 60px; width: 75%; display: none;">
+  			<strong>Oh snap!</strong> Looks like you missed some fields, misspelled your confirmation phrase, or your buy it now price wasn't 30% greater than the auction start price! Please fix everything highlighted in red and hit submit again!
+		</div>
 
       <!-- Main jumbotron for a primary marketing message or call to action -->
       <div class="jumbotron">
 		<img src='http://www.plentymarkets.eu/images/produkte/i17/1735-ebay-tm-rgb.png' width="250" height="100"/>
-        <h1>Listing Confirmation Page</h1>
+        <h2>Listing Confirmation Page</h2>
 <%
 String keyString = request.getParameter("key");
 if (keyString == null || keyString.equals("")) {
@@ -56,7 +66,7 @@ if (keyString == null || keyString.equals("")) {
 	Listing listing = DatabaseModule.retrieveListing(Long.parseLong(keyString));
 	String badCaptcha = request.getParameter("badCaptcha");
 	if (badCaptcha == null) badCaptcha = "false";
-	out.println("<p>Please finalize your listing and hit submit! You will get another chance to confirm the details on the next screen.</p>");
+	out.println("<p>Please review your listing and edit as needed, then hit submit! You will get another chance to confirm the details on the next screen.</p>");
 	if (badCaptcha.equals("true")) 	out.println("<p class=\"text-danger\">Your confirmation phrase was incorrect. Please check your spelling and try again!</p></div>");
 	else out.println("</div>");
 	String title = (String) listing.getTitle();
@@ -134,8 +144,8 @@ if (keyString == null || keyString.equals("")) {
 	  
 	  
 	  <div class="page-header"></div>
-	  <form name="finalize" action="FinalizeServlet" class="form-horizontal" role="form" method="POST">
-	  	<input type="hidden" name="captchaText" value="<%=captcha%>">
+	  <form name="finalize" id="finalizeForm" action="FinalizeServlet" class="form-horizontal" role="form" method="POST">
+	  	<input type="hidden" name="captchaText" id="captchaText" value="<%=captcha%>">
 		<div class="form-group">
 			<label for="body" class="col-md-3 control-label lead"><strong>Uploaded Pictures</strong></label>
 			<div class="col-md-9">
@@ -184,22 +194,22 @@ if (keyString == null || keyString.equals("")) {
 			</div>
 		</div>
 		
-		<div class="form-group">
+		<div class="form-group" id="titleGroup">
 			<label for="title" class="col-md-3 control-label lead"><strong>Listing Title</strong></label>
 			<div class="col-md-9">
-				<input type="text" class="form-control input-lg" name="title" maxlength="80" value="<%=title%>" placeholder="Listing title">
+				<input type="text" class="form-control input-lg" name="title" id="title" maxlength="80" value="<%=title%>" placeholder="Listing title">
 			</div>
 		</div>
-		<div class="form-group">
-			<label for="price" class="col-md-3 control-label lead"><strong>Starting Price ($)</strong></label>
+		<div class="form-group" id="priceGroup">
+			<label for="price" class="col-md-3 control-label lead"><strong>Auction Start Price ($)</strong></label>
 			<div class="col-md-9">
-				<input type="text" class="form-control input-lg" name="price" maxlength="30" value="<%=price%>" placeholder="Starting price">
+				<input type="text" class="form-control input-lg" name="price" id="price" maxlength="30" value="<%=price%>" placeholder="Starting price">
 			</div>
 		</div>
-		<div class="form-group">
+		<div class="form-group" id="buyItNowGroup">
 			<label for="buyItNow" class="col-md-3 control-label lead"><strong>Buy It Now Price ($)</strong></label>
 			<div class="col-md-9">
-				<input type="text" class="form-control input-lg" name="buyItNow" maxlength="30" placeholder="Optional, minimum 30% > starting price" value="<%=buyItNow %>">				
+				<input type="text" class="form-control input-lg" name="buyItNow" id="buyItNow" maxlength="30" placeholder="Optional, minimum 30% > starting price" value="<%=buyItNow %>">				
 			</div>
 		</div>
 		<div class="form-group">
@@ -251,10 +261,10 @@ if (keyString == null || keyString.equals("")) {
 		
 		<% if (spec0 != null) { %>	
 		<div class="form-group" id='specRow0' <% if (categoryIndex != 0) out.println("style=\"display: none\""); %>>
-			<label for="specRow0" class="col-md-3 control-label lead"><strong>Required Specifics</strong></label>
+			<label for="specRow0" class="col-md-3 control-label lead"><strong><u>REQUIRED</u> Specifics</strong></label>
 			<div class="col-md-9">				
 		<%
-			out.println("<input type=\"hidden\" name=\"0specCount\" value=\"" + spec0.length() + "\">");
+			out.println("<input type=\"hidden\" name=\"0specCount\" id=\"0specCount\" value=\"" + spec0.length() + "\">");
 			for (int i = 0; i < spec0.length(); i++) {
 				JSONObject curr = spec0.getJSONObject(i);
 				if (curr.get("type").equals("FreeText")) {
@@ -288,10 +298,10 @@ if (keyString == null || keyString.equals("")) {
 		
 		<% if (spec1 != null) { %>	
 		<div class="form-group" id='specRow1' <% if (categoryIndex != 1) out.println("style=\"display: none\""); %>>
-			<label for="specRow1" class="col-md-3 control-label lead"><strong>Required Specifics</strong></label>
+			<label for="specRow1" class="col-md-3 control-label lead"><strong><u>REQUIRED</u> Specifics</strong></label>
 			<div class="col-md-9">				
 		<%
-			out.println("<input type=\"hidden\" name=\"1specCount\" value=\"" + spec1.length() + "\">");
+			out.println("<input type=\"hidden\" name=\"1specCount\" id=\"1specCount\" value=\"" + spec1.length() + "\">");
 			for (int i = 0; i < spec1.length(); i++) {
 				JSONObject curr = spec1.getJSONObject(i);
 				if (curr.get("type").equals("FreeText")) {
@@ -325,10 +335,10 @@ if (keyString == null || keyString.equals("")) {
 		
 		<% if (spec2 != null) { %>	
 		<div class="form-group" id='specRow2' <% if (categoryIndex != 2) out.println("style=\"display: none\""); %>>
-			<label for="specRow2" class="col-md-3 control-label lead"><strong>Required Specifics</strong></label>
+			<label for="specRow2" class="col-md-3 control-label lead"><strong><u>REQUIRED</u> Specifics</strong></label>
 			<div class="col-md-9">				
 		<%
-			out.println("<input type=\"hidden\" name=\"2specCount\" value=\"" + spec2.length() + "\">");
+			out.println("<input type=\"hidden\" name=\"2specCount\" id=\"2specCount\" value=\"" + spec2.length() + "\">");
 			for (int i = 0; i < spec2.length(); i++) {
 				JSONObject curr = spec2.getJSONObject(i);
 				if (curr.get("type").equals("FreeText")) {
@@ -448,10 +458,10 @@ if (keyString == null || keyString.equals("")) {
 			</div>
 		</div>
 		
-		<div class="form-group">
+		<div class="form-group" id="locationGroup">
 			<label for="location" class="col-md-3 control-label lead"><strong>Your Location</strong></label>
 			<div class="col-md-9">
-				<input type="text" class="form-control input-lg" name="location" maxlength="80" value="<%=location%>" placeholder="Required (e.g. 95014 or San Jose, CA)">	
+				<input type="text" class="form-control input-lg" name="location" id="location" maxlength="80" value="<%=location%>" placeholder="Required (e.g. 95014 or San Jose, CA)">	
 			</div>
 		</div>
 		
@@ -484,10 +494,10 @@ if (keyString == null || keyString.equals("")) {
 			</div>
 		</div>
 		
-		<div class="form-group">
+		<div class="form-group" id="captchaGroup">
 			<label for="captcha" class="col-md-3 control-label lead"><strong>Enter Confirmation Phrase</strong></label>
 			<div class="col-md-9">
-				<input type="text" class="form-control input-lg" name="captcha" size="50" maxlength="500" placeholder="Decode above picture (case-insensitive).">
+				<input type="text" class="form-control input-lg" name="captcha" id="captcha" size="50" maxlength="500" placeholder="Decode above picture (case-insensitive).">
 			</div>
 		</div>
 		
@@ -496,7 +506,7 @@ if (keyString == null || keyString.equals("")) {
 				
 		<div class="form-group">
 			<div class="col-md-offset-3 col-md-9">
-				<button type="submit" class="btn btn-primary btn-lg">Submit</button>
+				<button type="submit" class="btn btn-success btn-lg" id="bigGreenButton">Submit</button>
 			</div>
 		</div>
 	</form>
@@ -531,8 +541,8 @@ function updateAll(i)
 	if (document.getElementById("specRow" + i) != null) document.getElementById("specRow" + i).style.display='inherit';
 	document.getElementById("whatCategoryIndex").value = i;
 }
-</script>
-<script type="text/javascript">
+	</script>
+	<script type="text/javascript">
 		$(document).ready(function() {
 			/*
 			 *  Simple image gallery. Uses default settings
@@ -541,6 +551,89 @@ function updateAll(i)
 			$('.fancybox').fancybox({
 				type: 'image'
 			});
+			$('.carousel').carousel({
+				  interval: 2000
+			});
+		});
+	</script>
+	<script type="text/javaScript"> 
+		$(document).on("click", "#bigGreenButton", function(e) {
+			e.preventDefault();
+			e.stopPropagation();
+			var missingFields = false;
+			var titleField = $("#title").val();
+			if (titleField == "") {
+				$("#titleGroup").addClass("has-error");
+				missingFields = true;
+			}
+			else {
+				$("#titleGroup").removeClass("has-error");
+			}
+			var priceField = $("#price").val();
+			if (priceField == "") {
+				$("#priceGroup").addClass("has-error");
+				missingFields = true;
+			}
+			else {
+				$("#priceGroup").removeClass("has-error");
+			}
+			var buyItNowField = $("#buyItNow").val();
+			var priceFloat = parseFloat(priceField);
+			var buyItNowFloat = parseFloat(buyItNowField);
+			if (buyItNowFloat <= 1.3 * priceFloat) {
+				$("#buyItNowGroup").addClass("has-error");
+				missingFields = true;
+			}
+			else {
+				$("#buyItNowGroup").removeClass("has-error");
+			}
+			var locationField = $("#location").val();
+			if (locationField == "") {
+				$("#locationGroup").addClass("has-error");
+				missingFields = true;
+			}
+			else {
+				$("#locationGroup").removeClass("has-error");
+			}
+			var categoryIndex = $("#whatCategoryIndex").val();
+			var countSelector = "#" + categoryIndex + "specCount";
+			var specCount = $(countSelector).val();
+			var validCount = 0;
+			for (var x = 0; x < specCount; x++) {
+				var selector = "[name='" + categoryIndex + "specValue" + x + "']";
+				var currInput = $(selector).val();
+				if (currInput == "") {
+					missingFields = true;
+				}
+				else {
+					validCount++;
+				}
+			}
+			if (validCount != specCount) {
+				$("#specRow" + categoryIndex).addClass("has-error");
+			}
+			else {
+				$("#specRow" + categoryIndex).removeClass("has-error");
+			}
+			var captchaField = $("#captcha").val();
+			var captchaText = $("#captchaText").val();
+			console.log(captchaField.toUpperCase());
+			console.log(captchaText.toUpperCase());
+			if (captchaField.toUpperCase() != captchaText.toUpperCase()) {
+				$("#captchaGroup").addClass("has-error");
+				missingFields = true;
+			}
+			else {
+				$("#captchaGroup").removeClass("has-error");
+			}
+			if (missingFields == false) {
+				$("#finalizeForm").submit();
+			}
+			else {
+				$("html, body").animate({ scrollTop: 0 }, "medium");
+				$("#alertDiv").show();
+			}		
+			
 		});
 	</script>
   </body>

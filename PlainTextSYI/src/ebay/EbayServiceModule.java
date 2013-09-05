@@ -185,7 +185,7 @@ public class EbayServiceModule {
 
 		//context.setEpsServerUrl("https://api.sandbox.ebay.com/ws/api.dll"); // SANDBOX
 		context.setEpsServerUrl("https://api.ebay.com/ws/api.dll"); // PROD
-		
+
 		// Set up retry for 3\
 		CallRetry cr = new CallRetry();
 		cr.setMaximumRetries(3);                      // Max 3 retries
@@ -196,7 +196,7 @@ public class EbayServiceModule {
 	} 
 
 	// Revise item call, for when you're modifying an item
-	public static String[] reviseItem(Listing l, long count, String EPID) throws ApiException, SdkException, Exception {
+	public static String[] reviseItem(Listing l, long count, String EPID) {
 		String reviseItemID = l.getFinalized();
 		ItemType item = buildItem(l, count, EPID);
 		item.setItemID(reviseItemID);
@@ -212,7 +212,7 @@ public class EbayServiceModule {
 				ex.printStackTrace();
 				String[] badResult = new String[2];
 				badResult[0] = "Error";
-				badResult[1] = "Error";
+				badResult[1] = api.getResponseXml();
 				return badResult;
 			}
 		}
@@ -233,6 +233,12 @@ public class EbayServiceModule {
 					EPID = new String(e.getMessage().substring(index + 5, EPIDindex));
 					return reviseItem(l, 23, "EPID"+EPID);
 				}
+				else {
+					String[] badResult = new String[2];
+					badResult[0] = "Error";
+					badResult[1] = api.getResponseXml();
+					return badResult;
+				}
 			}
 		}
 		double listingFee = eBayUtil.findFeeByName(fees.getFee(), "ListingFee").getFee().getValue();
@@ -241,14 +247,14 @@ public class EbayServiceModule {
 		returnVal[1] = item.getItemID();
 		return returnVal;
 	}
-	
-	
-	
-	
-	
-	
+
+
+
+
+
+
 	// Given a listing, proceeds to actually list it on eBay under the account specified in the context
-	public static String[] actuallyListItem(Listing l, long count, String EPID) throws ApiException, SdkException, Exception {
+	public static String[] actuallyListItem(Listing l, long count, String EPID) {
 		ItemType item = buildItem(l, count, EPID);
 		AddItemCall api = new AddItemCall(apiContext);
 
@@ -280,7 +286,7 @@ public class EbayServiceModule {
 				ex.printStackTrace();
 				String[] badResult = new String[2];
 				badResult[0] = "Error";
-				badResult[1] = "Error";
+				badResult[1] = api.getResponseXml();
 				return badResult;
 			}
 		}
@@ -300,6 +306,12 @@ public class EbayServiceModule {
 					}
 					EPID = new String(e.getMessage().substring(index + 5, EPIDindex));
 					return actuallyListItem(l, 23, "EPID"+EPID);
+				}
+				else {
+					String[] badResult = new String[2];
+					badResult[0] = "Error";
+					badResult[1] = api.getResponseXml();
+					return badResult;
 				}
 			}
 		}
@@ -507,7 +519,7 @@ public class EbayServiceModule {
 		a.setValue(amount);
 		return a;
 	}
-	
+
 	// Test functions here =)
 	public static void main(String[] args) throws ApiException, SdkException, Exception {
 		init();

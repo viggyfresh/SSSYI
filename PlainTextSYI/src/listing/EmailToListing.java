@@ -72,26 +72,32 @@ public class EmailToListing {
 		List<BodyPart> images = new ArrayList<BodyPart>();
 		ArrayList<String> types = new ArrayList<String>();
 		try {
-			// Get count (unique identifier) from database
-			long count = DatabaseModule.getCount();
-			// Init new listing
-			Listing entry = new Listing();
 			// Parse message for images, types, title, and body
 			String[] titleAndBody = parseMessage(msg, images, types);
-			// Set all fields for listing
-			setTextFields(titleAndBody, entry);
-			setAndStoreImages(images, types, entry, count);
-			setPrice(entry);
-			setCategories(entry);
-			setCaptcha(entry, count);
-			entry.setEmail(msg.getFrom()[0].toString());
-			setRequiredSpecifics(entry);
-			
-			//System.out.println(sql);
-			// Store listing to DB
-			DatabaseModule.storeListing(count, entry);
-			// Send reply
-			formatReplyMessage(count, msg, entry.getFullTitle());
+			if (images.size() == 0) {
+				sendErrorReply(msg);
+				return;
+			}
+			else {
+				// Get count (unique identifier) from database
+				long count = DatabaseModule.getCount();
+				// Init new listing
+				Listing entry = new Listing();
+				// Set all fields for listing
+				setTextFields(titleAndBody, entry);
+				setAndStoreImages(images, types, entry, count);
+				setPrice(entry);
+				setCategories(entry);
+				setCaptcha(entry, count);
+				entry.setEmail(msg.getFrom()[0].toString());
+				setRequiredSpecifics(entry);
+
+				//System.out.println(sql);
+				// Store listing to DB
+				DatabaseModule.storeListing(count, entry);
+				// Send reply
+				formatReplyMessage(count, msg, entry.getFullTitle());
+			}
 		}
 		catch (Exception ex) {
 			log.severe(ex.toString());
@@ -632,6 +638,30 @@ public class EmailToListing {
 		}
 		catch (MessagingException m) {
 			log.severe("Sending reply email failed");
+			m.printStackTrace();
+			StackTraceElement[] st = m.getStackTrace();
+			for (int j = 0; j < st.length; j++) {
+				log.severe(st[j].toString());
+			}
+		}
+
+	}
+
+	private static void sendErrorReply(Message msg) {
+		// Put together the templated message response (with key identifier)
+		String replyBody = "Thank you for emailing me, the world's greatest email-to-listing test server!\n";
+		replyBody += "I saw your email, but it didn't have any pictures attached!\n";
+		replyBody += "If you still want to list this item, please resend the email with at least one photo =)";
+		// Prepare & send the return message to the user
+		try {
+			Address[] froms = msg.getFrom();
+			InternetAddress trueFrom = (InternetAddress) froms[0];
+			String subject = "Your listing couldn't be created - see details!";
+			EmailSender.sendEmail(trueFrom, subject, replyBody);
+			log.info("Error reply email sent.");
+		}
+		catch (MessagingException m) {
+			log.severe("Sending error reply email failed");
 			m.printStackTrace();
 			StackTraceElement[] st = m.getStackTrace();
 			for (int j = 0; j < st.length; j++) {
