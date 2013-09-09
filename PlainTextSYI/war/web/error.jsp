@@ -44,15 +44,15 @@ pageEncoding="ISO-8859-1"%>
 
       <!-- Main jumbotron for a primary marketing message or call to action -->
       <div class="jumbotron">
-		<img src='http://www.plentymarkets.eu/images/produkte/i17/1735-ebay-tm-rgb.png' width="250" height="100"/>
-        <h2>Whoops! You broke something!</h2>
+      	<img src='http://www.plentymarkets.eu/images/produkte/i17/1735-ebay-tm-rgb.png' width="250" height="100"/>		
+        <h2>Whoops! I broke!</h2>
 		<%
 		String key = request.getParameter("key");
 		String text = request.getParameter("text");
 		if (text == null) text = "";
-		out.println("<p>We were unfortunately unable to list your item due to an error.</p>");
+		out.println("<p>I was unfortunately unable to list your item due to an error.</p>");
 		out.println("<p>The most common ones are: </p>");
-		out.println("<ul><li>Picking an invalid condition for your category</li><li>Not filling out a required field</li><Having the words 'like new' in your title</li><li>Listing to an unsupported category, like cell phones or computers</li></ul>");
+		out.println("<ul><li>Picking an invalid condition for your category</li><li>Not filling out a required field</li><li>Having the words 'like new' in your title</li><li>Listing to an unsupported category, like cell phones, computers, or cars</li></ul>");
 		out.println("<p>To fix your listing, please follow the link below. The error response from the eBay server is shown for your convenience.</p>");
 		out.println("<a class=\"btn btn-warning btn-lg\" href=\"listing.jsp?key=" + key + "\">Revise Item</a>");
 	
@@ -60,7 +60,7 @@ pageEncoding="ISO-8859-1"%>
 	   </div>
 	   
 	   <div class="row">
-	   	<div class="col-md-10">
+	   	<div class="col-md-12">
 	   		<div class="panel panel-danger">
 	   			<div class="panel-heading">
               		<h3 class="panel-title">Error Response</h3>

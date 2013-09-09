@@ -32,6 +32,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.json.JSONStringer;
 import org.json.JsonReader;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -375,6 +376,8 @@ public class EmailToListing {
 	private static void setAttributes (Listing entry, ArrayList<String> categoryIDs) throws UnsupportedEncodingException {
 		ArrayList<String> attributes = new ArrayList<String>();
 		// Parse for entry.getAttributes() based on the categories retrieved
+		JSONStringer stringer = new JSONStringer();
+		stringer.array();
 		for (int i = 0; i < 3; i++) {
 			String netAttributes = "";
 			String input = URLEncoder.encode(entry.getFullTitle(), "UTF-8");
@@ -387,7 +390,15 @@ public class EmailToListing {
 				for (int j = 0; j < test.length(); j++) {
 					JSONObject curr = test.getJSONObject(j);
 					JSONObject currAttribute = curr.getJSONObject("attribute");
-					netAttributes += (currAttribute.get("attributeType") + " : " + currAttribute.get("attributeValue") + "\n");
+					String key = currAttribute.getString("attributeType");
+					String value = currAttribute.getString("attributeValue");
+					netAttributes += (key + " : " + value + "\n");
+					stringer.object();
+					stringer.key("key");
+					stringer.value(key);
+					stringer.key("value");
+					stringer.value(value);
+					stringer.endObject();
 				}
 				log.info("Attribute" + i + ": " + netAttributes);
 				attributes.add(StringEscapeUtils.escapeHtml4(netAttributes));
@@ -399,6 +410,9 @@ public class EmailToListing {
 				if (i == 0) entry.setAttribute("");
 			}
 		}
+		stringer.endArray();
+		String specifics = stringer.toString();
+		entry.setSpecifics(specifics);
 		entry.setAttributes(attributes);
 
 	}
@@ -428,7 +442,7 @@ public class EmailToListing {
 			three = 0;
 		}
 		String captcha = split[one] + " " + split[two] + " " + split[three];
-		if (captcha.contains("  ")) captcha = captcha.replaceAll("  ", " eBay ");
+		captcha = captcha.trim().replaceAll(" +", " ");
 		entry.setCaptcha(captcha);
 		log.info("Captcha: " + captcha);
 		byte[] bmp_data = font.doRender(captcha, "LucidaBright-DemiBold");
@@ -464,12 +478,19 @@ public class EmailToListing {
 					}
 				}
 			}
-			if (split[i].toLowerCase().equalsIgnoreCase("ship")) {
+			if (split[i].toLowerCase().contains("ship")) {
 				if (i + 1 < split.length) {
 					if (split[i + 1].toLowerCase().contains("free")){
 						entry.setShippingChoice("Free Shipping");
 						log.info("Shipping: free shipping");
-
+					}
+					if (split[i + 1].toLowerCase().contains("for")) {
+						if (i + 2 < split.length) {
+							if (split[i + 2].toLowerCase().contains("free")) {
+								entry.setShippingChoice("Free Shipping");
+								log.info("Shipping: free shipping");
+							}
+						}
 					}
 				}
 			}
@@ -519,6 +540,14 @@ public class EmailToListing {
 							entry.setShippingChoice("Free Shipping");
 							log.info("Shipping: free shipping");
 						}
+						if (bodySplit[i + 1].toLowerCase().contains("for")) {
+							if (i + 2 < bodySplit.length) {
+								if (bodySplit[i + 2].toLowerCase().contains("free")) {
+									entry.setShippingChoice("Free Shipping");
+									log.info("Shipping: free shipping");
+								}
+							}
+						}
 					}
 				}
 				if (bodySplit[i].toLowerCase().equalsIgnoreCase("no")) {
@@ -566,6 +595,8 @@ public class EmailToListing {
 			else {
 				titleAndBody[1] += new String(msg.getContent().toString());
 			}
+			titleAndBody[0] = titleAndBody[0].trim().replaceAll(" +", " ");
+			titleAndBody[1] = titleAndBody[1].trim().replaceAll(" +", " ");
 			return titleAndBody;
 		}
 		catch (Exception m) {
@@ -615,8 +646,7 @@ public class EmailToListing {
 	// Sends reply message
 	private static void formatReplyMessage(long key, Message msg, String title) throws UnsupportedEncodingException {
 		// Put together the templated message response (with key identifier)
-		String replyBody = "Thank you for emailing me, the world's greatest email-to-listing test server!\n";
-		replyBody += "I have processed your email and have created an editable listing page for your perusal.\n";
+		String replyBody = "Thank you for emailing me! I have processed your email and have created an editable listing page for you.\n";
 		replyBody += "Please check it out at " + BASE_URL + "web/listing.jsp?key=" + key;
 		// Prepare & send the return message to the user
 		try {
@@ -630,9 +660,9 @@ public class EmailToListing {
 				else content[0] = "Listing";
 			}
 			String subject = "";
-			if (content.length == 1) subject = "Your listing \"" + content[0] + "\" is ready to be viewed!";
-			else if (content.length == 2) subject = "Your listing \"" + content[0] + " " + content[1] + "\" is ready to be viewed!";
-			else if (content.length >= 3) subject = "Your listing \"" + content[0] + " " + content[1] +  " " + content[2] + "\" is ready to be viewed!";
+			if (content.length == 1) subject = "Your item \"" + content[0] + "\" is ready to be edited!";
+			else if (content.length == 2) subject = "Your item \"" + content[0] + " " + content[1] + "\" is ready to be edited!";
+			else if (content.length >= 3) subject = "Your item \"" + content[0] + " " + content[1] +  " " + content[2] + "\" is ready to be edited!";
 			EmailSender.sendEmail(trueFrom, subject, replyBody);
 			log.info("Reply email sent.");
 		}

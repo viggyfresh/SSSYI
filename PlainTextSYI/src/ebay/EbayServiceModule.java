@@ -428,7 +428,7 @@ public class EbayServiceModule {
 			ReturnPolicyType rp = new ReturnPolicyType();
 			rp.setDescription("Returns accepted.");
 			rp.setReturnsAcceptedOption("ReturnsAccepted");
-			rp.setReturnsWithinOption("Days_30");
+			rp.setReturnsWithinOption("Days_14");
 			return rp;
 		}
 		else {

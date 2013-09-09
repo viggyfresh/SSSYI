@@ -41,13 +41,9 @@ pageEncoding="ISO-8859-1"%>
   <body>
 
     <div class="container theme-showcase">
-      <div class="progress">
-        <div class="progress-bar progress-bar-info" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%"><span>Relax: Step 3 of 3</span></div>
-      </div>
-
       <!-- Main jumbotron for a primary marketing message or call to action -->
       <div class="jumbotron">
-		<img src='http://www.plentymarkets.eu/images/produkte/i17/1735-ebay-tm-rgb.png' width="250" height="100"/>
+      	<img src='http://www.plentymarkets.eu/images/produkte/i17/1735-ebay-tm-rgb.png' width="250" height="100"/>		
         <h2>Listing Submitted to eBay</h2>
 		<%
 		String id = request.getParameter("id");

@@ -115,7 +115,11 @@ public class FinalizeServlet extends HttpServlet {
 					buyItNow = "";
 				}
 				// Deal with IP, specifics
-				String IP = req.getRemoteAddr();
+				// Is client hiding behind something?
+				String IP = req.getHeader("X-FORWARDED-FOR");  
+				if (IP == null) {  
+					IP = req.getRemoteAddr();  
+				}
 				String specifics = "[]";
 				log.info("Category index: " + categoryIndex);
 				String countString = req.getParameter(categoryIndex + "specCount");

@@ -42,13 +42,23 @@ pageEncoding="ISO-8859-1"%>
 
     <div class="container theme-showcase">
 
-      <div class="progress">
-        <div class="progress-bar progress-bar-info" role="progressbar" aria-valuenow="66" aria-valuemin="0" aria-valuemax="100" style="width: 66%"><span>Finalize: Step 2 of 3</span></div>
-      </div>
-
       <!-- Main jumbotron for a primary marketing message or call to action -->
       <div class="jumbotron">
-		<img src='http://www.plentymarkets.eu/images/produkte/i17/1735-ebay-tm-rgb.png' width="250" height="100"/>
+      	<div class="row">
+      		<div class="col-md-6">
+      			<img src='http://www.plentymarkets.eu/images/produkte/i17/1735-ebay-tm-rgb.png' width="250" height="100"/>		
+      		</div>
+      		<div class="col-md-6">
+      			<div class="panel panel-default">
+      				<div class="panel-body">
+      					<small>Finalize: Step 2 of 2</small>
+      				</div>
+      				<div class="progress" style="width: 95%; margin-left: auto; margin-right: auto">
+        				<div class="progress-bar progress-bar-info" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%"><span class="sr-only">Finalize: Step 2 of 2</span></div>
+     				</div>
+      			</div>     			
+      		</div>
+      	</div>
         <h2>Almost there!</h2>
 <%
 String keyString = request.getParameter("key");
@@ -237,7 +247,7 @@ if (keyString == null || keyString.equals("")) {
 		
 		
 		<div class="form-group">
-			<label for="location" class="col-md-3 control-label lead"><strong>Your Location</strong></label>
+			<label for="location" class="col-md-3 control-label lead"><strong>Item Location</strong></label>
 			<div class="col-md-9">
 				<p class="form-control-static lead"><%=location %></p>							
 			</div>
@@ -255,7 +265,7 @@ if (keyString == null || keyString.equals("")) {
 			<div class="col-md-9">
 				<p class="form-control-static lead">
 					<%
-						if (returns.equals("yes")) out.println("Returns Accepted (30 days)");
+						if (returns.equals("yes")) out.println("Returns Accepted (14 days)");
 						else out.println("No Returns Accepted");
 					%>
 				</p>				
@@ -300,7 +310,7 @@ if (keyString == null || keyString.equals("")) {
 				type: 'image'
 			});
 			$('.carousel').carousel({
-				  interval: 2000
+				  interval: 8000
 			});
 		});
 	</script>

@@ -43,18 +43,28 @@ pageEncoding="ISO-8859-1"%>
 
 
     <div class="container theme-showcase">
-    
-      <div class="progress">
-        <div class="progress-bar progress-bar-info" role="progressbar" aria-valuenow="33" aria-valuemin="0" aria-valuemax="100" style="width: 33%;"><span>Proofread: Step 1 of 3</span></div>
-      </div>
       
-        <div class="alert alert-danger" id="alertDiv" style="position: absolute; margin-left: auto; margin-right: auto; margin-top: 60px; width: 75%; display: none;">
-  			<strong>Oh snap!</strong> Looks like you missed some fields, misspelled your confirmation phrase, or your buy it now price wasn't 30% greater than the auction start price! Please fix everything highlighted in red and hit submit again!
+        <div class="alert alert-danger" id="alertDiv" style="position: absolute; margin-left: auto; margin-right: auto; margin-top: 60px; width: 75%; display: none; z-index: 100;">
+  			<strong>Oh snap!</strong> Looks like you missed something! Please fix everything highlighted in red and hit submit again!
 		</div>
 
       <!-- Main jumbotron for a primary marketing message or call to action -->
       <div class="jumbotron">
-		<img src='http://www.plentymarkets.eu/images/produkte/i17/1735-ebay-tm-rgb.png' width="250" height="100"/>
+      	<div class="row">
+      		<div class="col-md-6">
+      			<img src='http://www.plentymarkets.eu/images/produkte/i17/1735-ebay-tm-rgb.png' width="250" height="100"/>		
+      		</div>
+      		<div class="col-md-6">
+      			<div class="panel panel-default">
+      				<div class="panel-body">
+      					<small>Proofread: Step 1 of 2</small>
+      				</div>
+      				<div class="progress" style="width: 95%; margin-left: auto; margin-right: auto">
+        				<div class="progress-bar progress-bar-info" role="progressbar" aria-valuenow="50" aria-valuemin="0" aria-valuemax="100" style="width: 50%"><span class="sr-only">Proofread: Step 1 of 2</span></div>
+     				</div>
+      			</div>     			
+      		</div>
+      	</div>
         <h2>Listing Confirmation Page</h2>
 <%
 String keyString = request.getParameter("key");
@@ -144,7 +154,7 @@ if (keyString == null || keyString.equals("")) {
 	  
 	  
 	  <div class="page-header"></div>
-	  <form name="finalize" id="finalizeForm" action="FinalizeServlet" class="form-horizontal" role="form" method="POST">
+	  <form name="finalize" id="finalizeForm" action="FinalizeServlet" class="form-horizontal" role="form" autocomplete="off" method="POST">
 	  	<input type="hidden" name="captchaText" id="captchaText" value="<%=captcha%>">
 		<div class="form-group">
 			<label for="body" class="col-md-3 control-label lead"><strong>Uploaded Pictures</strong></label>
@@ -209,7 +219,7 @@ if (keyString == null || keyString.equals("")) {
 		<div class="form-group" id="buyItNowGroup">
 			<label for="buyItNow" class="col-md-3 control-label lead"><strong>Buy It Now Price ($)</strong></label>
 			<div class="col-md-9">
-				<input type="text" class="form-control input-lg" name="buyItNow" id="buyItNow" maxlength="30" placeholder="Optional, minimum 30% > starting price" value="<%=buyItNow %>">				
+				<input type="text" class="form-control input-lg" name="buyItNow" id="buyItNow" maxlength="30" data-toggle="popover" data-placement="top" data-trigger="focus" data-content="Your buy it now price must be 30% greater than your starting price!" placeholder="Optional, minimum 30% > starting price" value="<%=buyItNow %>">				
 			</div>
 		</div>
 		<div class="form-group">
@@ -459,9 +469,9 @@ if (keyString == null || keyString.equals("")) {
 		</div>
 		
 		<div class="form-group" id="locationGroup">
-			<label for="location" class="col-md-3 control-label lead"><strong>Your Location</strong></label>
+			<label for="location" class="col-md-3 control-label lead"><strong>Item Location</strong></label>
 			<div class="col-md-9">
-				<input type="text" class="form-control input-lg" name="location" id="location" maxlength="80" value="<%=location%>" placeholder="Required (e.g. 95014 or San Jose, CA)">	
+				<input type="text" class="form-control input-lg" name="location" id="location" maxlength="80" value="<%=location%>" placeholder="REQUIRED (e.g. 95014 or San Jose, CA)">	
 			</div>
 		</div>
 		
@@ -481,7 +491,7 @@ if (keyString == null || keyString.equals("")) {
 			<label for="returns" class="col-md-3 control-label lead"><strong>Return Policy</strong></label>
 			<div class="col-md-9">
 				<select name="returns" class="form-control input-lg">
-  					<option value="yes" <% if (returns.equals("yes")) out.println("selected"); %>>Returns Accepted (30 days)</option>
+  					<option value="yes" <% if (returns.equals("yes")) out.println("selected"); %>>Returns Accepted (14 days)</option>
   					<option value="no" <% if (returns.equals("no")) out.println("selected"); %>>No Returns Accepted</option>		
   				</select>
 			</div>
@@ -552,8 +562,10 @@ function updateAll(i)
 				type: 'image'
 			});
 			$('.carousel').carousel({
-				  interval: 2000
+				  interval: 8000
 			});
+			$('#buyItNow').popover();
+			
 		});
 	</script>
 	<script type="text/javaScript"> 
@@ -583,6 +595,7 @@ function updateAll(i)
 			if (buyItNowFloat <= 1.3 * priceFloat) {
 				$("#buyItNowGroup").addClass("has-error");
 				missingFields = true;
+				$("#buyItNow").popover('show');
 			}
 			else {
 				$("#buyItNowGroup").removeClass("has-error");
