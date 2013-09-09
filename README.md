@@ -148,3 +148,28 @@ VIII. Making basic changes to the project
 		i. To change how required specifics are stored, go to the setRequiredSpecifics method. 
 		j. To change the formatting or text of the response email, go to the formatReplyMessage method.
 		k. If you want to change anything else, see the quick and dirty tour above to locate the file you want to modify.
+
+IX. Known Issues
+	1. Cannot list in categories that require an eBay product ID match
+		a. Examples include Cell Phones and Smartphones, Computers, etc.
+	2. Cannot specify your own category (if the three returned options are not correct)
+	3. Cannot add, subtract, or reorder pictures after the email is sent
+	4. Can only create an auction-style listing (no fixed-price option)
+	5. Only some condition values are possible for some categories
+		a. For instance, selling used dog food or "for parts/not working" clothing is illegal
+	6. Currently, we only show REQUIRED specifics to list an item
+		a. There are a bunch of recommended (but optional) specifics that we could also show
+	7. Cannot list an item under multiple categories
+		a. On regular site, this is allowed, but has an associated fee for it
+
+X. Todo List
+	1. Add a product catalog matching function
+		a. If category requires a product ID match, search for one using this function and list the item accordingly
+		b. If many choices, present the user with another dropdown in the listing.jsp form to pick the correct product and its corresponding product ID
+	2. Replace Poseidon shipping options
+		a. Currently, we're going to a website and messily pulling details from the website html
+		b. Need to replace and refactor this method
+	3. Do better at getting public IP
+		a. Currently we only get the local eBay IP -> need one more level of indirection
+	4. Dynamically populate item condition select field
+		a. Need to make an eBay API call to get the permissible condition values for the specific category
