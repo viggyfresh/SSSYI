@@ -1,5 +1,4 @@
-<%@ page language="java" contentType="text/html; charset=ISO-8859-1"
-pageEncoding="ISO-8859-1"%>
+<%@ page language="java" contentType="text/html; charset=ISO-8859-1" pageEncoding="ISO-8859-1"%>
 <%@ page import="java.util.*"%>
 <%@ page import="java.io.*"%>
 <%@ page import="javax.mail.*"%>
@@ -8,6 +7,8 @@ pageEncoding="ISO-8859-1"%>
 <%@ page import="db.*" %>
 <%@ page import="listing.*" %>
 <%@ page import="org.json.*" %>
+<%@ page import="java.util.regex.*" %>
+
 
 <!DOCTYPE html>
 <html lang="en">
@@ -105,6 +106,14 @@ if (keyString == null || keyString.equals("")) {
 	String shippingChoice = (String) listing.getShippingChoice();
 	if (shippingChoice == null) 
 		shippingChoice = "";
+			
+	String flatShippingPrice = "";
+	Pattern mine = Pattern.compile("\\$\\s*\\d*[.]?\\d{0,10}");
+	Matcher matcher = mine.matcher(shippingChoice);
+	if (matcher.find()) {
+		flatShippingPrice = matcher.group();
+		flatShippingPrice = flatShippingPrice.replaceAll("\\$", "");
+	}
 	ArrayList<String> urls = listing.getUrls();
 	ArrayList<String> categories = listing.getCategories();
 	ArrayList<String> options = listing.getShippingOptions();
@@ -411,6 +420,12 @@ if (keyString == null || keyString.equals("")) {
 						No shipping: local pickup only
 					</label>
 				</div>
+				<div class="radio form-inline">
+					<label>
+						<input type="radio" name="0shipping" id="shipping3" value="Standard flat rate shipping at" <%if (shippingChoice.startsWith("Standard flat rate")) out.println("checked=\"checked\"");%>>
+						Standard flat rate shipping at $ <input type="text" class="form-control" name="0flatrateshipping" id="0flatrateshipping" style="width: 15%" maxlength="80" value="<%=flatShippingPrice%>" placeholder="Flat rate price">   <small><em>[Carrier choice at seller's discretion]</em></small>
+					</label>
+				</div>
 			</div>
 		</div>
 		
@@ -438,6 +453,12 @@ if (keyString == null || keyString.equals("")) {
 						No shipping: local pickup only
 					</label>
 				</div>
+				<div class="radio form-inline">
+					<label>
+						<input type="radio" name="1shipping" id="shipping3" value="Standard flat rate shipping at" <%if (shippingChoice.startsWith("Standard flat rate")) out.println("checked=\"checked\"");%>>
+						Standard flat rate shipping at $ <input type="text" class="form-control" name="1flatrateshipping" id="1flatrateshipping" style="width: 15%" maxlength="80" value="<%=flatShippingPrice%>" placeholder="Flat rate price">   <small><em>[Carrier choice at seller's discretion]</em></small>
+					</label>
+				</div>
 			</div>
 		</div>
 		
@@ -463,6 +484,12 @@ if (keyString == null || keyString.equals("")) {
 					<label>
 						<input type="radio" name="2shipping" id="shipping2" value="No shipping: local pickup only" <%if (shippingChoice.equals("No shipping: local pickup only")) out.println("checked=\"checked\"");%>>
 						No shipping: local pickup only
+					</label>
+				</div>
+				<div class="radio form-inline">
+					<label>
+						<input type="radio" name="2shipping" id="shipping3" value="Standard flat rate shipping at" <%if (shippingChoice.startsWith("Standard flat rate")) out.println("checked=\"checked\"");%>>
+						Standard flat rate shipping at $ <input type="text" class="form-control" name="2flatrateshipping" id="2flatrateshipping" style="width: 15%" maxlength="80" value="<%=flatShippingPrice%>" placeholder="Flat rate price">   <small><em>[Carrier choice at seller's discretion]</em></small>
 					</label>
 				</div>
 			</div>
@@ -494,6 +521,12 @@ if (keyString == null || keyString.equals("")) {
   					<option value="yes" <% if (returns.equals("yes")) out.println("selected"); %>>Returns Accepted (14 days)</option>
   					<option value="no" <% if (returns.equals("no")) out.println("selected"); %>>No Returns Accepted</option>		
   				</select>
+			</div>
+		</div>
+		<div class="form-group">
+			<label for="paymentMethod" class="col-md-3 control-label lead"><strong>Payment Method</strong></label>
+			<div class="col-md-9">
+				<p class="form-control-static lead">You will receive your money through Paypal, sent to your email address once your item sells</p>				
 			</div>
 		</div>
 		
@@ -582,7 +615,7 @@ function updateAll(i)
 				$("#titleGroup").removeClass("has-error");
 			}
 			var priceField = $("#price").val();
-			if (priceField == "") {
+			if (priceField == "" || isNaN(parseFloat(priceField))) {
 				$("#priceGroup").addClass("has-error");
 				missingFields = true;
 			}
@@ -590,15 +623,24 @@ function updateAll(i)
 				$("#priceGroup").removeClass("has-error");
 			}
 			var buyItNowField = $("#buyItNow").val();
-			var priceFloat = parseFloat(priceField);
-			var buyItNowFloat = parseFloat(buyItNowField);
-			if (buyItNowFloat <= 1.3 * priceFloat) {
+			if (buyItNowField != "" && isNaN(parseFloat(buyItNowField))) {
 				$("#buyItNowGroup").addClass("has-error");
 				missingFields = true;
-				$("#buyItNow").popover('show');
 			}
 			else {
 				$("#buyItNowGroup").removeClass("has-error");
+			}
+			var priceFloat = parseFloat(priceField);
+			var buyItNowFloat = parseFloat(buyItNowField);
+			if (!isNaN(parseFloat(priceField)) && !isNaN(parseFloat(buyItNowField))) {
+				if (buyItNowFloat <= 1.3 * priceFloat) {
+					$("#buyItNowGroup").addClass("has-error");
+					missingFields = true;
+					$("#buyItNow").popover('show');
+				}
+				else {
+					$("#buyItNowGroup").removeClass("has-error");
+				}
 			}
 			var locationField = $("#location").val();
 			if (locationField == "") {
@@ -628,10 +670,26 @@ function updateAll(i)
 			else {
 				$("#specRow" + categoryIndex).removeClass("has-error");
 			}
+			if (!$("input[name='" + categoryIndex + "shipping']").is(':checked')) {
+				 missingFields = true;
+				$("#shippingRow" + categoryIndex).addClass("has-error");
+			}
+			else {
+				$("#shippingRow" + categoryIndex).removeClass("has-error");
+			}
+			var shippingChoice = $('input[name="' + categoryIndex + 'shipping"]:checked').val();
+			if (shippingChoice != null && shippingChoice.substring(0,8) == "Standard") {
+				var flatrateprice = $('#' + categoryIndex + "flatrateshipping").val();
+				if (isNaN(parseFloat(flatrateprice))) {
+					missingFields = true;
+					$("#shippingRow" + categoryIndex).addClass("has-error");
+				}
+				else {
+					$("#shippingRow" + categoryIndex).removeClass("has-error");
+				}
+			}
 			var captchaField = $("#captcha").val();
 			var captchaText = $("#captchaText").val();
-			console.log(captchaField.toUpperCase());
-			console.log(captchaText.toUpperCase());
 			if (captchaField.toUpperCase() != captchaText.toUpperCase()) {
 				$("#captchaGroup").addClass("has-error");
 				missingFields = true;

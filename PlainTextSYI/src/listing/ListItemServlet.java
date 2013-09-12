@@ -23,7 +23,6 @@ import email.EmailSender;
 public class ListItemServlet extends HttpServlet {
 
 	private static final Logger log = Logger.getLogger(ListItemServlet.class.getName());    
-	private static final String BASE_URL = "http://emailtolisting-16253.phx-os1.stratus.dev.ebay.com:8080/PlainTextSYI/";
 
 	/*
 	 * Only post requests are honored
@@ -56,7 +55,7 @@ public class ListItemServlet extends HttpServlet {
 				InternetAddress from = new InternetAddress(l.getEmail());
 				String replyBody = "Congratulations! Your item has been listed.\n";
 				replyBody += "You can view your item here: http://www.ebay.com/itm/" + results[1] + "\n";
-				replyBody += "To revise it, go here: " + BASE_URL + "web/listing.jsp?key=" + keyString;
+				replyBody += "To revise it, go here: " + EmailToListing.BASE_URL + "web/listing.jsp?key=" + keyString;
 				String[] content;
 				String title = l.getTitle();
 				if (title.contains(" ")) content = title.split(" ");

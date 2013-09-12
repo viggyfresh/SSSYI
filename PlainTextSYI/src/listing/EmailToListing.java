@@ -49,7 +49,7 @@ import ebay.EbayServiceModule;
 import email.EmailSender;
 
 /*
- * Takes in email, turns it into a listing object
+ * Takes in email, turns it into a listing object. The meat of any changes to be made will go here.
  */
 
 public class EmailToListing {
@@ -60,7 +60,7 @@ public class EmailToListing {
 
 	private static final String regex = "\\$\\s*\\d*[.]?\\d{0,10}";
 
-	private static final String BASE_URL = "http://emailtolisting-16253.phx-os1.stratus.dev.ebay.com:8080/PlainTextSYI/";
+	protected static final String BASE_URL = "http://emailtolisting-16253.phx-os1.stratus.dev.ebay.com:8080/PlainTextSYI/";
 
 	private static final String HARDCODE_URL = "C:/Program Files (x86)/Apache Software Foundation/Tomcat 7.0/webapps/PlainTextSYI/";
 	//private static final String HARDCODE_URL = "/Users/vivenkataraman/Documents/PlainTextSYI/PlainTextSYI/war/";
@@ -92,8 +92,6 @@ public class EmailToListing {
 				setCaptcha(entry, count);
 				entry.setEmail(msg.getFrom()[0].toString());
 				setRequiredSpecifics(entry);
-
-				//System.out.println(sql);
 				// Store listing to DB
 				DatabaseModule.storeListing(count, entry);
 				// Send reply
@@ -679,9 +677,9 @@ public class EmailToListing {
 
 	private static void sendErrorReply(Message msg) {
 		// Put together the templated message response (with key identifier)
-		String replyBody = "Thank you for emailing me, the world's greatest email-to-listing test server!\n";
-		replyBody += "I saw your email, but it didn't have any pictures attached!\n";
-		replyBody += "If you still want to list this item, please resend the email with at least one photo =)";
+		String replyBody = "Thank you for emailing me!\n";
+		replyBody += "I saw your email, but it had no pictures!\n";
+		replyBody += "Please resend your email with at least one picture attached.";
 		// Prepare & send the return message to the user
 		try {
 			Address[] froms = msg.getFrom();

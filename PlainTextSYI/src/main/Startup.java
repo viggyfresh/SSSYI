@@ -11,12 +11,14 @@ import email.EmailSender;
 
 /*
  * Startup class. Initializes everything that needs to be, shuts down
- * stuff when needed.
+ * stuff when needed. You most likely do not need to touch this.
  */
 
 public class Startup {
 
 private static final String email = "emailtolisting@gmail.com";
+private static final String pwd = "EbayOpArch";
+
 
 private static final Logger log = Logger.getLogger(Startup.class.getName());
 
@@ -35,9 +37,7 @@ private static final Logger log = Logger.getLogger(Startup.class.getName());
 				DatabaseModule.init();
 				EbayServiceModule.init();
 				EmailSender.init(email);
-				String user = "emailtolisting@gmail.com";
-				String pwd = "EbayOpArch";
-				receiver = new EmailReceiver(user, pwd);
+				receiver = new EmailReceiver(email, pwd);
 				receiver.ListenForEmails();
 			}
 		};

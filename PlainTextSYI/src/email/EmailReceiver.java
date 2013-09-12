@@ -20,7 +20,7 @@ import listing.EmailToListing;
 import com.sun.mail.imap.IMAPFolder;
 
 /*
- * Receives emails, grabs new messages, and makes listing objects out of them.
+ * Receives emails, grabs new messages, and goes through the EmailToListing process.
  * Currently configured to gmail; uncomment stuff to make it work for CORP
  */
 

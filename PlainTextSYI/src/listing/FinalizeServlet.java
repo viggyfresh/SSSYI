@@ -13,6 +13,8 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.json.JSONStringer;
 
+import com.ibm.jvm.dtfjview.commands.WhatisCommand;
+
 import db.DatabaseModule;
 
 
@@ -142,6 +144,16 @@ public class FinalizeServlet extends HttpServlet {
 					specifics = stringer.toString();
 					log.info("Specifics JSON text: " + specifics);
 				}
+				if (shippingChoice.startsWith("Standard flat rate")) {
+					String flatrateprice = req.getParameter(categoryIndex + "flatrateshipping");
+					flatrateprice = flatrateprice.replaceAll("\\$", "");
+					BigDecimal tempBD = new BigDecimal(flatrateprice);
+					tempBD = tempBD.setScale(2, BigDecimal.ROUND_HALF_UP);
+					flatrateprice = tempBD.toString();
+					shippingChoice = shippingChoice + " $" + flatrateprice + ".";
+				}
+				
+				
 				// Update listing in DB
 				DatabaseModule.updateListing(Long.parseLong(keyString), title, body, price, buyItNow, condition, time, category, shippingChoice, attribute, location, handlingTime, returns, specifics, IP);
 				// Create the response page, job's done

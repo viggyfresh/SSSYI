@@ -13,7 +13,7 @@ import ebay.EbayServiceModule;
 import listing.Listing;
 
 /*
- * Sets up and makes all MySQL DB queries
+ * Sets up and makes all MySQL DB queries. Repackages returned queries as Listing objects when appropriate.
  */
 
 public class DatabaseModule {

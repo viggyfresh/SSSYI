@@ -2,6 +2,8 @@ package ebay;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.logging.Logger;
 
 import org.json.JSONArray;
@@ -59,6 +61,7 @@ import com.ebay.soap.eBLBaseComponents.ValueRecommendationType;
 
 /* Handles any eBay service calls that the app needs to make.
  * For example, getting suggested categories or listing an item.
+ * Touch at your own peril =P
  */
 
 
@@ -368,8 +371,9 @@ public class EbayServiceModule {
 
 		JSONArray specJSON = new JSONArray(l.getSpecifics());
 		int specCount = specJSON.length();
+		HashSet<String> listedSpecifics = new HashSet<String>();
+		ArrayList<NameValueListType> tempSpecifics = new ArrayList<NameValueListType>();
 		if (specCount != 0) {
-			NameValueListType[] specifics = new NameValueListType[specCount];
 			for (int i = 0; i < specCount; i++) {
 				JSONObject curr = specJSON.getJSONObject(i);
 				String key = curr.getString("key");
@@ -377,8 +381,52 @@ public class EbayServiceModule {
 				NameValueListType temp = new NameValueListType();
 				temp.setName(key);
 				temp.setValue(new String[]{ value });
-				specifics[i] = temp;
+				tempSpecifics.add(temp);
+				listedSpecifics.add(key);
 			}
+			String attribute = l.getAttribute();
+			if (attribute.contains("\n")) {
+				String[] firstSplit = attribute.split("\n");
+				for (int i = 0; i < firstSplit.length; i++) {
+					String curr = firstSplit[i];
+					if (curr.contains(":")) {
+						String[] secondSplit = curr.split(":");
+						String key = secondSplit[0].trim();
+						String value = secondSplit[1].trim();
+						if (!listedSpecifics.contains(key)) {
+							NameValueListType temp = new NameValueListType();
+							temp.setName(key);
+							temp.setValue(new String[]{ value });
+							tempSpecifics.add(temp);
+						}
+					}
+				}
+			}
+			NameValueListType[] specifics = tempSpecifics.toArray(new NameValueListType[tempSpecifics.size()]);
+			NameValueListArrayType nv = new NameValueListArrayType();
+			nv.setNameValueList(specifics);
+			item.setItemSpecifics(nv);
+		}
+		else {
+			String attribute = l.getAttribute();
+			if (attribute.contains("\n")) {
+				String[] firstSplit = attribute.split("\n");
+				for (int i = 0; i < firstSplit.length; i++) {
+					String curr = firstSplit[i];
+					if (curr.contains(":")) {
+						String[] secondSplit = curr.split(":");
+						String key = secondSplit[0].trim();
+						String value = secondSplit[1].trim();
+						if (!listedSpecifics.contains(key)) {
+							NameValueListType temp = new NameValueListType();
+							temp.setName(key);
+							temp.setValue(new String[]{ value });
+							tempSpecifics.add(temp);
+						}
+					}
+				}
+			}
+			NameValueListType[] specifics = tempSpecifics.toArray(new NameValueListType[tempSpecifics.size()]);
 			NameValueListArrayType nv = new NameValueListArrayType();
 			nv.setNameValueList(specifics);
 			item.setItemSpecifics(nv);
@@ -507,6 +555,12 @@ public class EbayServiceModule {
 		else if (shippingChoice.startsWith("US Postal Service Priority Mail")) {
 			ShippingServiceOptionsType st1 = new ShippingServiceOptionsType();
 			st1.setShippingService(ShippingServiceCodeType.USPS_PRIORITY.value());
+			st1.setShippingServiceCost(getAmount(cost));
+			sd.setShippingServiceOptions(new ShippingServiceOptionsType[]{st1});
+		}
+		else if (shippingChoice.startsWith("Standard flat rate")) {
+			ShippingServiceOptionsType st1 = new ShippingServiceOptionsType();
+			st1.setShippingService(ShippingServiceCodeType.SHIPPING_METHOD_STANDARD.value());
 			st1.setShippingServiceCost(getAmount(cost));
 			sd.setShippingServiceOptions(new ShippingServiceOptionsType[]{st1});
 		}

@@ -13,7 +13,7 @@ import javax.mail.internet.MimeMessage;
 
 /*
  * Sends email from your account of choice. Right now configured to gmail; commented out sections
- * work on ebay corp server
+ * work on eBay CORP server
  */
 public class EmailSender {
 

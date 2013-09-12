@@ -271,7 +271,12 @@ if (keyString == null || keyString.equals("")) {
 				</p>				
 			</div>
 		</div>
-		
+		<div class="form-group">
+			<label for="paymentMethod" class="col-md-3 control-label lead"><strong>Payment Method</strong></label>
+			<div class="col-md-9">
+				<p class="form-control-static lead">You will receive your money through Paypal, sent to your email address once your item sells</p>				
+			</div>
+		</div>
 		<input type="hidden" name="key" value="<%=keyString%>">
 		
 				
