@@ -1,5 +1,5 @@
 I. PlainTextSYI system requirements
-	1. An OpenStratus box (preferably externally enabled or public facing) with administrator privileges
+	1. An OpenStratus box (preferably externally enabled or public facing) with administrator privileges, and an internet connection
 	2. IBM JRE, which is the eBay suggested JRE anyway
 	3. Eclipse installed
 	4. Tomcat 7.0 installed
@@ -19,9 +19,12 @@ III. Set up MySQL and configure schema
 		a. Username: root
 		b. Password: root
 		c. Host: localhost, port 5555
+		d. Go into the server settings and set interactive_timeout and wait_timeout to INT_MAX (2147483)
 	2. Import schema: etldb.mwb
 		a. This file is checked in with the Git project and is located in the root directory of the project
 		b. Using MySQL Workbench, import this model and apply it to your DB
+			i. Mainly, what we need is "create schema etl_db", + "create table etl_db.etl_count" + "create table etl_db.etl_data"...
+			ii. You can actually just copy the SQL statements and run those scripts on your database, if the model frightens you off
 	3. Verify schema 
 		a. Ensure that your schema is called "etl_db"
 		b. Make sure there are 2 tables: etl_db.etl_count (total count) and etl_db.etl_data (actual listing data)	
@@ -46,33 +49,37 @@ IV. Configure your box settings - open up the project in Eclipse, edit the follo
 	4. EbayServiceModule.java
 		a. In method getApiContext(), change any eBay developer credentials as required (shouldn’t be necessary until temp account privileges are granted, and even then ONLY on the actuallyListItem and reviseItem calls)
 	5. DatabaseModule.java
-		a. private static final String SQL_URL = "jdbc:mysql://emailtolisting-16253.phx-os1.stratus.dev.ebay.com:5555/etl_db";
+		a. private static final String SQL_URL = "jdbc:mysql://localhost:5555/etl_db";
 		b. private static final String USERNAME = "root";
 		c. private static final String PASSWORD = "root";
 		d. private static final String TABLE = "ETL_DATA";
 		e. private static final String COUNT_TABLE = "ETL_COUNT";
 			i. All of these fields must match (exactly) the MySQL configuration (port number, hostname, username/password for server, schema name (here etl_db), and table names. If you followed section III exactly, all you will have to modify is the hostname.
-			ii. Format: "jdbc:[machine-name]:5555/etl_db"
+			ii. Format: "jdbc:[machine-name OR localhost]:5555/etl_db"
 
 V. Getting the project to run for the first time
 	1. It goes without saying that you need the project files imported into Eclipse
 		a. ALSO, make sure all your configuration is done correctly
-	2. Export entire thing as a WAR file, put the war in the webapps/ directory in your tomcat install 
+	2. Export entire thing as a WAR file (to desktop, somewhere that doesn't require admininstrator confirmation!)
+	3. Drag and drop the war into the webapps/ directory in your Tomcat 7.0 installation directory
 		a. Default: "C:/Program Files (x86)/Apache Software Foundation/Tomcat 7.0/webapps/
+		b. You may need to authenticate as an administrator
 	3. Start up Tomcat. That should do it
 
-V. Pushing changes to the project (NOTE: if you want your images to persist, follow these directions exactly)
+V. Pushing changes to the project (NOTE: IF YOU WANT YOUR IMAGES TO PERSIST, FOLLOW THESE DIRECTIONS EXACTLY, OR ELSE THEY WILL BE WIPED!!!!)
 	1. Make whatever changes you want to the project in Eclipse
 	2. Stop the Tomcat server 
 		a. Can be done through system tray if Tomcat is properly installed as a service
-	3. Make a copy of the images folder 
+		b. Just double click on server icon, hit the stop button
+	3. Make a copy of the images folder to your desktop
 		a. Default: "C:/Program Files (x86)/Apache Software Foundation/Tomcat 7.0/webapps/PlainTextSYI/files/images
-	4. Export the project (with changes) as a WAR, back into the webapps directory, replacing the existing WAR file
+	4. Export the project (with changes) as a WAR to your desktop, then drag it back into the webapps directory, replacing the existing WAR file
 		a. Default: "C:/Program Files (x86)/Apache Software Foundation/Tomcat 7.0/webapps
+		b. You may need to authenticate as an administrator
 	5. Delete the old unpacked PlainTextSYI FOLDER in the webapps directory. This forces Tomcat to unpack the fresh WAR
 		a. Default: "C:/Program Files (x86)/Apache Software Foundation/Tomcat 7.0/webapps
 	6. Restart Tomcat as a service 
-	7. After full restart, copy the images folder from wherever you made the copy back into webapps/PlainTextSYI/files/images
+	7. After full restart, copy the images folder from your desktop back into webapps/PlainTextSYI/files/images
  
 VI. A newbie's guide to the project
 	1. NOTE: MAKE SURE YOU ARE USING THE RECOMMENDED IBM JRE, or else stuff may get a little screwey
@@ -149,7 +156,15 @@ VIII. Making basic changes to the project
 		j. To change the formatting or text of the response email, go to the formatReplyMessage method.
 		k. If you want to change anything else, see the quick and dirty tour above to locate the file you want to modify.
 
-IX. Known Issues
+IX. Consulting the logs
+	1. Debugging this app is impossible in realtime, as it's deployed to a server
+	2. However, we can closely approximate this by consulting the logs
+	3. The logs are located in your Tomcat 7.0 install directory
+		a. Default: "C:/Program Files (x86)/Apache Software Foundation/Tomcat 7.0"
+		b. There should be a "logs" folder in this directory
+	4. The key log to consult is the "catalina" log; the rest contain mostly redundant info that is already logged in Catalina.
+
+X. Known Issues
 	1. Cannot list in categories that require an eBay product ID match
 		a. Examples include Cell Phones and Smartphones, Computers, etc.
 	2. Cannot specify your own category (if the three returned options are not correct)
@@ -162,7 +177,7 @@ IX. Known Issues
 	7. Cannot list an item under multiple categories
 		a. On regular site, this is allowed, but has an associated fee for it
 
-X. Todo List
+XI. Todo List
 	1. Add a product catalog matching function
 		a. If category requires a product ID match, search for one using this function and list the item accordingly
 		b. If many choices, present the user with another dropdown in the listing.jsp form to pick the correct product and its corresponding product ID
